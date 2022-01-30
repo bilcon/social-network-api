@@ -8,26 +8,29 @@ const userSchema = new Schema(
       unique: true,
       required: true,
       trim: true,
-    }
+    },
     email: {
       type: String,
       required: true,
       unique: true,
-      mathch: [/^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/, 'Please enter a valid email address']
-    }
+      mathch: [
+        /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/,
+        "Please enter a valid email address",
+      ],
+    },
     thoughts: [
       {
         type: Schema.Types.ObjectId,
         ref: "Thought",
-      }
-    ]
+      },
+    ],
     friends: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'User',
-      }
-    ]
-  }
+        ref: "User",
+      },
+    ],
+  },
   {
     toJSON: {
       virtuals: true,
