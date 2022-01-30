@@ -26,4 +26,24 @@ const thoughtController = {
         res.sendStatus(400);
       });
   },
+
+  createThought({ params, body }, res) {
+    Thought.create(body)
+      .then(({ _id }) => {
+        return User.findOneAndUpdate(
+          { _id: params.userId },
+          { $push: { thoughts: dbThoughtData._id } },
+          { new: true }
+        );
+      })
+      .then((dbUserData) => {
+        console.log(dbUserData);
+        if (!dbUserData) {
+          res.status(404).json();
+          return;
+        }
+        res.json(dbUserData);
+      })
+      .catch((err) => res.json(err));
+  },
 };
