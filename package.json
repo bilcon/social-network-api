@@ -20,6 +20,6 @@
   "homepage": "https://github.com/bilcon/social-network-api#readme",
   "dependencies": {
     "express": "^4.17.2",
-    "mongoose": "^6.1.8"
+    "mongoose": "^6.2.0"
   }
 }

@@ -2,111 +2,148 @@ const { Thought, User } = require("../models");
 
 const thoughtController = {
   getThoughts(req, res) {
-    Thoughts.find({})
-      .populate({ path: "reactions", select: "-__v" })
-      .select("-__v")
-      .sort({ _id: -1 })
-      .then((dbThoughtsData) => res.json(dbThoughtsData))
+    Thought.find()
+      .sort({ createdAt: -1 })
+      .then((dbThoughtData) => {
+        res.json(dbThoughtData);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json(err);
+      });
+  },
+  getSingleThought(req, res) {
+    Thought.findOne({ _id: req.params.thoughtId })
+      .then((dbThoughtData) => {
+        if (!dbThoughtData) {
+          return res
+            .status(404)
+            .json({ message: "There is no thought with this id!" });
+        }
+        res.json(dbThoughtData);
+      })
       .catch((err) => {
         console.log(err);
         res.status(500).json(err);
       });
   },
 
-  getSingleThought(req, res) {
-    Thought.findOne({ _id: params.id })
-      .populate({
-        path: "thoughts",
-        select: "-__v",
-      })
-      .select("-__v")
-      .then((dbThoughtData) => res.json(dbThoughtData))
-      .catch((err) => {
-        console.log(err);
-        res.sendStatus(400);
-      });
-  },
-
-  createThought({ params, body }, res) {
-    Thought.create(body)
-      .then(({ _id }) => {
+  createThought(req, res) {
+    Thought.create(req.body)
+      .then((dbThoughtData) => {
         return User.findOneAndUpdate(
-          { _id: params.userId },
+          { _id: req.body.userId },
           { $push: { thoughts: dbThoughtData._id } },
           { new: true }
         );
       })
       .then((dbUserData) => {
-        console.log(dbUserData);
         if (!dbUserData) {
-          res.status(404).json();
-          return;
+          return res
+            .status(404)
+            .json({
+              message: "Thought created but there is no user with this id!",
+            });
         }
-        res.json(dbUserData);
+
+        res.json({ message: "Created thought successfully!" });
       })
-      .catch((err) => res.json(err));
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json(err);
+      });
   },
 
-  updateThought({ params, body }, res) {
-    Thought.findOneAndUpdate({ _id: params.id }, body, {
-      new: true,
-      runValidators: true,
-    })
+  updateThought(req, res) {
+    Thought.findOneAndUpdate(
+      { _id: req.params.thoughtId },
+      { $set: req.body },
+      { runValidators: true, new: true }
+    )
       .then((dbThoughtData) => {
         if (!dbThoughtData) {
-          res.status(404).json({ message: "No thought found with this id!" });
-          return;
+          return res
+            .status(404)
+            .json({ message: "There is no thought with this id!" });
         }
         res.json(dbThoughtData);
       })
-      .catch((err) => res.json(err));
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json(err);
+      });
   },
 
-  deleteThought({ params }, res) {
-    Thought.findOneAndRemove({ _id: params.thoughtId })
+  deleteThought(req, res) {
+    Thought.findOneAndRemove({ _id: req.params.thoughtId })
       .then((dbThoughtData) => {
         if (!dbThoughtData) {
-          return res.status(404).json({ message: "No thought with this id!" });
+          return res
+            .status(404)
+            .json({ message: "There is no thought with this id!" });
         }
-        return Pizza.findOneAndUpdate(
-          { _id: params.thoughtId },
-          { $pull: { thought: params.thoughtId } },
+
+        return User.findOneAndUpdate(
+          { thoughts: req.params.thoughtId },
+          { $pull: { thoughts: req.params.thoughtId } },
           { new: true }
         );
       })
       .then((dbUserData) => {
         if (!dbUserData) {
-          res.status(404).json({ message: "No thought found with this id!" });
-          return;
+          return res
+            .status(404)
+            .json({
+              message: "Thought created but there is no user with this id!",
+            });
         }
-        res.json(dbThoughtData);
+        res.json({ message: "Deleted thought successfully!" });
       })
-      .catch((err) => res.json(err));
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json(err);
+      });
   },
 
-  addReaction({ params, body }, res) {
+  addReaction(req, res) {
     Thought.findOneAndUpdate(
-      { _id: params.thoughtId },
-      { $push: { replies: body } },
-      { new: true, runValidators: true }
+      { _id: req.params.thoughtId },
+      { $addToSet: { reactions: req.body } },
+      { runValidators: true, new: true }
     )
       .then((dbThoughtData) => {
         if (!dbThoughtData) {
-          res.status(404).json({ message: "No thought found with this id!" });
-          return;
+          return res
+            .status(404)
+            .json({ message: "There is no thought with this id!" });
         }
         res.json(dbThoughtData);
       })
-      .catch((err) => res.json(err));
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json(err);
+      });
   },
 
-  removeReaction({ params }, res) {
+  removeReaction(req, res) {
     Thought.findOneAndUpdate(
-      { _id: params.thoughtId },
-      { $pull: { reactions: { reactionId: params.reactionId } } },
-      { new: true }
+      { _id: req.params.thoughtId },
+      { $pull: { reactions: { reactionId: req.params.reactionId } } },
+      { runValidators: true, new: true }
     )
-      .then((dbThoughtData) => res.json(dbThoughtData))
-      .catch((err) => res.json(err));
+      .then((dbThoughtData) => {
+        if (!dbThoughtData) {
+          return res
+            .status(404)
+            .json({ message: "There is no thought with this id!" });
+        }
+        res.json(dbThoughtData);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json(err);
+      });
   },
 };
+
+module.exports = thoughtController;
