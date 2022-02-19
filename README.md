@@ -60,3 +60,4 @@ By running npm start and using Insomnia you can test the endpoints.
 
 - Github: [bilcon](https://github.com/bilcon/social-network-api)
 - Email: bilcon@swbell.net
+- Screencastify: https://drive.google.com/file/d/1dXar66UimfY8oTu8IWE4hqtfnaEfPRHY/view
